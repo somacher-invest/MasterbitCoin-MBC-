@@ -6,7 +6,6 @@ CONFIGFOLDER='/root/.masterbitcore'
 COIN_DAEMON='masterbitd'
 COIN_CLI='masterbit-cli'
 COIN_PATH='/usr/local/bin/'
-#COIN_REPO='Place Holder'
 COIN_TGZ='https://github.com/somacher-invest/MasterbitCoin-MBC-/releases/download/MBC/masterbit.tar.gz'
 COIN_NAME='Masterbit'
 COIN_PORT=3883
