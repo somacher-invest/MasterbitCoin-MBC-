@@ -1,4 +1,63 @@
+#!/bin/bash
 
+TMP_FOLDER=$(mktemp -d)
+CONFIG_FILE='masterbit.conf'
+CONFIGFOLDER='/root/.masterbitcore'
+COIN_DAEMON='masterbitd'
+COIN_CLI='masterbit-cli'
+COIN_PATH='/usr/local/bin/'
+#COIN_REPO='Place Holder'
+COIN_TGZ='https://github.com/somacher-invest/MasterbitCoin-MBC-/releases/download/MBC/masterbit.tar.gz'
+COIN_NAME='Masterbit'
+COIN_PORT=3883
+RPC_PORT=3884
+
+NODEIP=$(curl -s4 icanhazip.com)
+
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+function download_node() {
+  echo -e "Preparing to download ${GREEN}$COIN_NAME${NC}."
+  cd $TMP_FOLDER >/dev/null 2>&1
+  wget -q $COIN_TGZ
+  compile_error
+  tar xvzf masterbit.tar.gz >/dev/null 2>&1
+  chmod +x $COIN_DAEMON $COIN_CLI
+  compile_error
+  cp $COIN_DAEMON $COIN_CLI $COIN_PATH
+  cd ~ >/dev/null 2>&1
+  rm -rf $TMP_FOLDER >/dev/null 2>&1
+  clear
+}
+
+
+function configure_systemd() {
+  cat << EOF > /etc/systemd/system/$COIN_NAME.service
+[Unit]
+Description=$COIN_NAME service
+After=network.target
+[Service]
+User=root
+Group=root
+Type=forking
+#PIDFile=$CONFIGFOLDER/$COIN_NAME.pid
+ExecStart=$COIN_PATH$COIN_DAEMON -daemon -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER
+ExecStop=-$COIN_PATH_$COIN_CLI -conf=$CONFIGFOLDER/$CONFIG_FILE -datadir=$CONFIGFOLDER stop
+Restart=always
+PrivateTmp=true
+TimeoutStopSec=60s
+TimeoutStartSec=10s
+StartLimitInterval=120s
+StartLimitBurst=5
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  systemctl daemon-reload
+  sleep 3
   systemctl start $COIN_NAME.service
   systemctl enable $COIN_NAME.service >/dev/null 2>&1
 
